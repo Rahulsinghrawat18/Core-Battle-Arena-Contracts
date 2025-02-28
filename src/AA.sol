@@ -29,6 +29,8 @@ contract AA {
     constructor() {
         ownerOfContract = msg.sender;
         aa_Token = new AA_Token();
+       //Transfer ownership of AA_Token to the AA contract
+        aa_Token.transferOwnership(address(this));
         numOfItems = 0;
     }
 
@@ -82,16 +84,35 @@ contract AA {
         return items;
     }
 
-    function registerWinner(string memory code, address winner) public {
-        if(roomWinners[code] == address(0)) {
-            roomWinners[code] = winner;
-        }else{
-            require(roomWinners[code]==winner, AA_WrongWinner());
-            roomWinners[code]=address(0);
-            winnings[winner]++;
-            aa_Token.mint(winner);
+function registerWinner(string memory code, address winner) public {
+    if (roomWinners[code] == address(0)) {
+        roomWinners[code] = winner;
+        winnings[winner]++;
+
+        // Mint token every time the user wins
+        try aa_Token.mint(winner) {
+            // Minting successful
+        } catch {
+            revert("Token minting failed");
+        }
+
+    } else {
+        if (roomWinners[code] != winner) {
+            revert AA_WrongWinner();
+        }
+        roomWinners[code] = address(0);
+        winnings[winner]++;
+
+        // Mint token again because the user won again
+        try aa_Token.mint(winner) {
+            // Minting successful
+        } catch {
+            revert("Token minting failed");
         }
     }
+}
+
+
 
     function getWinnings(address user) public view returns (uint256) {
         return winnings[user];
@@ -108,5 +129,10 @@ contract AA {
     function owner() public view returns(address) {
         return ownerOfContract;
     }
+
+    function getTotalSupply() public view returns (uint256) {
+    return aa_Token.totalSupply(); 
+    }
+
 
 }

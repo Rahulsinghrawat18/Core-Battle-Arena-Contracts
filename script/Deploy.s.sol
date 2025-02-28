@@ -26,6 +26,7 @@ contract DeployWithData is Script {
         aa.addItem(2000, "HlCHR");
         aa.addItem(2000, "MgCHR");
         aa.addItem(2000, "TnCHR");
+        aa.addItem(2000, "map2");
         vm.stopBroadcast();
         address ownedBy = aa.owner();
         console.log("Owner",ownedBy);
